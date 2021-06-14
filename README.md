@@ -11,7 +11,7 @@ yarn add @buccaneerai/stt-assemblyai
 ## Demo
 To run the demo pipeline:
 ```bash
-yarn demo:run <myInstanceId> --secret <secretAccessKey> --write-output
+yarn demo:run <apiKey>
 ```
 
 ## API
