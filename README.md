@@ -11,12 +11,12 @@ yarn add @buccaneerai/stt-assemblyai
 ## Demo
 To run the demo pipeline:
 ```bash
-yarn demo:run <myInstanceId> --secret <secretAccessKey> --write-output
+yarn demo:run <apiKey>
 ```
 
 ## API
 
-### `toIBM`
+### `toAssemblyAI`
 ```js
 import {from} from 'rxjs';
 import {toAssemblyAI} from '@buccaneerai/stt-assemblyai';
@@ -39,4 +39,4 @@ output$.subscribe(console.log);
 See [CONTRIBUTING.md](https://github.com/buccaneerai/stt-assemblyai/blob/master/docs/CONTRIBUTING.md) file for information about deployments, etc.
 
 ## References
-- [IBM Speech-to-text docs](https://cloud.ibm.com/docs/speech-to-text?topic=speech-to-text-websockets)
+- [AssemblyAI docs](https://docs.assemblyai.com/api-ref/v2-stream)
