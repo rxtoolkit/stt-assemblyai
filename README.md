@@ -16,7 +16,7 @@ yarn demo:run <myInstanceId> --secret <secretAccessKey> --write-output
 
 ## API
 
-### `toIBM`
+### `toAssemblyAI`
 ```js
 import {from} from 'rxjs';
 import {toAssemblyAI} from '@buccaneerai/stt-assemblyai';
