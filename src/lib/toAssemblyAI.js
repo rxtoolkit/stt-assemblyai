@@ -1,3 +1,4 @@
+import get from 'lodash/get';
 import axios from 'axios';
 import {from,merge,of,ReplaySubject,throwError} from 'rxjs';
 import {
@@ -22,7 +23,6 @@ const sendRecognitionRequest = function sendRecognitionRequest({
   url = 'https://api.assemblyai.com/v2/stream'
 }) {
   return fileChunk => {
-    console.log('sending request');
     const reqParams = {
       url,
       method: 'POST',
@@ -49,11 +49,30 @@ const bufferUntilIndexReached = nextChunkIndex$ => ([chunk, index]) => (
   )
 );
 
+const mapResAndIndexToTimedEvent = secondsPerChunk => ([res, index]) => ({
+  ...get(res, 'data', {}),
+  words: get(res, 'data.words', []).map(w => ({
+    ...w,
+    start: w.start + secondsPerChunk * index,
+    end: w.end + secondsPerChunk * index,
+  })),
+});
+
+// const cacheToCorrectSize = desiredSize => fileChunk$ => fileChunk$.pipe(
+//   scan((acc, chunk) => {
+//     if (chunk < desiredSize)
+//   }, [Buffer.from(''), Buffer.from(''), false]),
+
+// );
+
 const toAssemblyAI = function toAssemblyAI({
   apiKey = process.env.ASSEMBLY_AI_API_KEY, // REQUIRED
-  chunkSize = 32000 * 15, // 15-second chunks, assuming 16-bit PCM data is 2 bytes/second @ sample rate of 16Khz
-  addDelay = true,
+  secondsPerChunk = 15,
+  sampleRate = 16000,
+  byteSizePerSample = 2
 }) {
+  // assuming 16-bit PCM data (@sample rate of 16Khz) size is 2 bytes/second
+  const chunkSize = secondsPerChunk * sampleRate * byteSizePerSample;
   if (!apiKey) return throwError(errors.apiKeyRequired());
   return fileChunk$ => {
     const pump$ = new ReplaySubject(1);
@@ -69,11 +88,9 @@ const toAssemblyAI = function toAssemblyAI({
     const response$ = chunkToTranscribe$.pipe(
       map(sendRecognitionRequest({apiKey})),
       mergeMap(res$ => res$),
-      tap(r => console.log('res', r.data)),
       scan(addIndex(), [null, -1]),
       tap(([res, i]) => pump$.next(i + 1)),
-      tap(x => console.log('pumped', x[1])),
-      map(([res]) => res.data)
+      map(mapResAndIndexToTimedEvent(secondsPerChunk))
     );
     return response$;
   };
